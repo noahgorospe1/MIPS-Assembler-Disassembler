@@ -30,6 +30,8 @@ const char* registers[] = {
 // Each entry includes the instruction name, type, opcode, funct code (if applicable), and the registers used
 // This array is used for instruction decoding and execution in the MIPS simulator
 const struct instruction_definition instruction_definitions[] = {
+    // Three "Golden Standard" Instructions
+    // The ADD instruction shows what each part of the instruction defintion means
     {
         "ADD",                  // MIPS instruction name
         R_TYPE,                 // R type instruction
