@@ -10,14 +10,17 @@
 
 int main(int argc, char *argv[])
 {
+	//Initilize in and out filename
 	// Call the command line argument parser
 	char* in_filename = NULL;
 	char* out_filename = NULL;
 	uint32_t flags;
 	flags = command_line_args(argc, argv, &in_filename, &out_filename);
 
+	//Gets current state
 	enum InteractiveState int_state;
 
+	
 	if (flags & ARG_AUTO) {
 		int_state = INACTIVE;
 	}
@@ -30,7 +33,9 @@ int main(int argc, char *argv[])
 	// Create empty file pointer for reading in
 	FILE* in_file = NULL;
 
+	//Starts a while loop to contiuously check the state
 	while (1) {
+		//Initialize variables
 		char line[LINE_BUFF_SIZE];
 		get_next_input(line, &int_state, flags, in_filename, &in_file);
 		char* error = NULL;
@@ -39,6 +44,8 @@ int main(int argc, char *argv[])
 		uint32_t inst_in;
 		uint32_t result;
 		char decompile_result[LINE_BUFF_SIZE];
+
+		//Switch statement that corrosponds to the different options that the user can choose
 		switch (int_state) {
 			case ASM_TO_MACH:
 				// Call conversion from assembly to binary
