@@ -26,172 +26,153 @@ const char* registers[] = {
 };
 
 
+// Array of instruction definitions for supported MIPS instructions
+// Each entry includes the instruction name, type, opcode, funct code (if applicable), and the registers used
+// This array is used for instruction decoding and execution in the MIPS simulator
 const struct instruction_definition instruction_definitions[] = {
-    // Three "Golden Standard" Instructions
-    // The ADD instruction shows what each part of the instruction defintion means
     {
         "ADD",                  // MIPS instruction name
-        R_TYPE,                 // Type of instruction (R, I, or J)
-        "000000",               // Opcode
-        "100000",               // Funct Code
-        { RD, RS, RT, EMPTY }   // Registers
-    },                          // This would be read as: add $rd, $rs, $rt
-
-
-    {
-        "ADDI",                // MIPS instruction name
-        I_TYPE,                // Instruction Type
-        "001000",              // Opcode
-        NULL,                  // Funct Code
-        { RT, RS, IMM, EMPTY } // Registers
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "100000",               // Funct Code for ADD
+        { RD, RS, RT, EMPTY }  // Registers used: add $rd, $rs, $rt
     },
 
-
     {
-        "BNE",                 // MIPS instruction name
-        I_TYPE,                // Instruction Type
-        "000101",              // Opcode
-        NULL,                  // Funct Code
-        { RS, RT, IMM, EMPTY } // Registers
+        "ADDI",                 // MIPS instruction name
+        I_TYPE,                 // I type instruction
+        "001000",               // Opcode for ADDI
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: addi $rt, $rs, imm
     },
 
-
-    //TODO: Fix the bugs in the other instructions to restore functionality
-
-
     {
-        "AND",      			// MIPS instruction name
-        R_TYPE,     			// Instruction Type [Changed from I_TYPE]
-        "000000",   			// Opcode [Changed from 001000]
-        "100100",   			// Funct Code
-        { RD, RS, RT, EMPTY } 	// Registers
+        "BNE",                  // MIPS instruction name
+        I_TYPE,                 // I type instruction
+        "000101",               // Opcode for BNE
+        NULL,                   // No funct code for I type instructions
+        { RS, RT, IMM, EMPTY } // Registers used: bne $rs, $rt, imm
     },
 
+    {
+        "AND",                  // MIPS instruction name
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "100100",               // Funct code for AND
+        { RD, RS, RT, EMPTY }  // Registers used: and $rd, $rs, $rt
+    },
 
     {
         "ANDI",                 // MIPS instruction name
-        I_TYPE,     	        // Instruction Type [Changed from R_TYPE]
-        "001100",               // Opcode
-        NULL,                   // Funct Code
-        { RT, RS, IMM, EMPTY }  // Registers [order rearranged]
+        I_TYPE,                 // I type instruction
+        "001100",               // Opcode for ANDI
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: andi $rt, $rs, imm
     },
-
 
     {
         "BEQ",                  // MIPS instruction name
-        I_TYPE,                 // Instruction Type [Changed from r_TYPE]
-        "000100",               // Opcode [Changed from 000000]
-        NULL,                   // Removed the function field
-        { RS, RT, IMM, EMPTY }  // Registers
+        I_TYPE,                 // I type instruction
+        "000100",               // Opcode for BEQ
+        NULL,                   // No funct code for I type instructions
+        { RS, RT, IMM, EMPTY } // Registers used: beq $rs, $rt, imm
     },
-
 
     {
         "DIV",                  // MIPS instruction name
-        R_TYPE,                 // Instruction Type
-        "000000",               // Opcode
-        "011010",               // Funct Code
-        { RS, RT, EMPTY, EMPTY } // registers [Added RT register]
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "011010",               // Funct code for DIV
+        { RS, RT, EMPTY, EMPTY } // Registers used: div $rs, $rt
     },
-
 
     {
-        "LUI",                    // MIPS instruction name
-        I_TYPE,                   // Instruction Type
-        "001111",                 // Opcode
-        NULL,                     // Funct Code
-        { RT, IMM, EMPTY, EMPTY } // Registers [Removed RS register and updated RT register]
+        "LUI",                  // MIPS instruction name
+        I_TYPE,                 // I type instruction
+        "001111",               // Opcode for LUI
+        NULL,                   // No funct code for I type instructions
+        { RT, IMM, EMPTY, EMPTY } // Registers used: lui $rt, imm
     },
-
 
     {
-        "LW",                  // MIPS instruction name
-        I_TYPE,                // Instruction Type [Changed from R_TYPE]
-        "100011",              // Opcode
-        NULL,                  // Funct Code
-        { RT, RS, IMM, EMPTY } // Registers [Rearranged the order of registers]
+        "LW",                   // MIPS instruction name
+        I_TYPE,                 // I type instruction
+        "100011",               // Opcode for LW
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: lw $rt, imm($rs)
     },
-
 
     {
-        "MFHI",                     // MIPS instruction name
-        R_TYPE,                     // Instruction Type
-        "000000",                   // Opcode
-        "010000",                   // Funct Code [Changed from 010010]
-        { RD, EMPTY, EMPTY, EMPTY } // Removed RS register and updated to RD register
+        "MFHI",                 // MIPS instruction name
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "010000",               // Funct code for MFHI
+        { RD, EMPTY, EMPTY, EMPTY } // Registers used: mfhi $rd
     },
-
 
     {
-        "MFLO",                     // MIPS instruction name
-        R_TYPE,                     // Instruction Type
-        "000000",                   // Opcode
-        "010010",                   // Funct code [Changed from 010000]
-        { RD, EMPTY, EMPTY, EMPTY } // Removed RS register and updated to RD register
+        "MFLO",                 // MIPS instruction name
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "010010",               // Funct code for MFLO
+        { RD, EMPTY, EMPTY, EMPTY } // Registers used: mflo $rd
     },
-
 
     {
         "OR",                   // MIPS instruction name
-        R_TYPE,                 // Instruction type
-        "000000",               // Updated the opcode [from 001101
-        "100101",               // Updated function code [from 000000]
-        { RD, RS, RT, EMPTY }   // Registers
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "100101",               // Funct code for OR
+        { RD, RS, RT, EMPTY }  // Registers used: or $rd, $rs, $rt
     },
-
 
     {
-        "SLT",                // MIPS instruction name
-        R_TYPE,               // Instruction type
-        "000000",             // Opcode
-        "101010",             // Funct code [Changed from 101011]
-        { RD, RS, RT, EMPTY } // Registers [Rearranged the order of registers]
+        "SLT",                  // MIPS instruction name
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "101010",               // Funct code for SLT
+        { RD, RS, RT, EMPTY }  // Registers used: slt $rd, $rs, $rt
     },
-
 
     {
         "SUB",                  // MIPS instruction name
-        R_TYPE,                 // Instruction Type
-        "000000",               // Opcode [Changed from 100010]
-        "100010",               // Funct Code [Changed from 000000]
-        { RD, RS, RT, EMPTY }   // Added RD register
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "100010",               // Funct code for SUB
+        { RD, RS, RT, EMPTY }  // Registers used: sub $rd, $rs, $rt
     },
-
 
     {
         "SW",                   // MIPS instruction name
-        I_TYPE,                 // Instruction Type
-        "101001",               // Opcode [Changed from 100011]
-        NULL,                   // Funct Code
-        { RT, RS, IMM, EMPTY }  // Registers [Rearranged values]
+        I_TYPE,                 // I type instruction
+        "101011",               // Opcode for SW
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: sw $rt, imm($rs)
     },
-   
-    // TODO: Implement MULT, ORI, and SLTI instructions once bugs are fixed
 
-    // The following instructions have been newly implemented
+    // Newly implemented instructions
+
     {
-        "MULT", 	            // MIPS instruction name
-        R_TYPE,	                // Instruction Type
-        "000000",               // Opcode
-        "011000",	            // Funct code
-        { RS, RT, EMPTY, EMPTY }// Registers
+        "MULT",                 // MIPS instruction name
+        R_TYPE,                 // R type instruction
+        "000000",               // Opcode for R type instructions is always 000000
+        "011000",               // Funct code for MULT
+        { RS, RT, EMPTY, EMPTY } // Registers used: mult $rs, $rt
     },
-
 
     {
         "ORI",                  // MIPS instruction name
-        I_TYPE,                 // Instruction Type
-        "001101",               // Opcode
-        NULL,                   // Funct code
-        { RT, RS, IMM, EMPTY }  // Registers
+        I_TYPE,                 // I type instruction
+        "001101",               // Opcode for ORI
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: ori $rt, $rs, imm
     },
-
 
     {
         "SLTI",                 // MIPS instruction name
-        I_TYPE,                 // Instruction Type
-        "001010",               // Opcode
-        NULL,                   // Funct code
-        { RT, RS, IMM, EMPTY}   // Registers
+        I_TYPE,                 // I type instruction
+        "001010",               // Opcode for SLTI
+        NULL,                   // No funct code for I type instructions
+        { RT, RS, IMM, EMPTY } // Registers used: slti $rt, $rs, imm
     }
 };
