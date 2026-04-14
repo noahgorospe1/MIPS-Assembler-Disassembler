@@ -81,7 +81,8 @@ uint32_t parse_assembly(char *line, char **error)
         remove_space(token);
 
         /* makes any operand that begins with # and immediate operand*/
-        if (token[0] == '#')
+        //added allows for negative immediates and immediates that are just numbers without the #, since some instructions like lui allow for that
+        if (token[0] == '#' || isdigit(token[0]) || token[0] == '-')
         {
             result.types[arg] = IMMEDIATE;
             /*removes the # before passing the number */
@@ -116,7 +117,7 @@ uint32_t parse_assembly(char *line, char **error)
         }
         else
         {
-            /* throws the error if its an unsippored operand type or if they are not suppored yet*/
+            /* throws the error if its an unsupported operand type or if they are not suppored yet*/
             *error = "Argument isn't register or immediate (targets not yet supported).";
             free(opp_name);
             opp_name = NULL;
