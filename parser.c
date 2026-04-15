@@ -80,6 +80,7 @@ uint32_t parse_assembly(char *line, char **error)
         /* removes any whitespace inside the operant*/
         remove_space(token);
 
+        // FIXED: parser now accepts immediates without '#'
         /* makes any operand that begins with # and immediate operand*/
         //added allows for negative immediates and immediates that are just numbers without the #, since some instructions like lui allow for that
         if (token[0] == '#' || isdigit(token[0]) || token[0] == '-')
