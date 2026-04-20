@@ -112,7 +112,29 @@ int main(int argc, char *argv[])
 				* ------------------------------------------------------------------------- */
 				
 				printf("Broken Binary Received: %s\n", line);
-				printf("Bonus Logic Not Yet Implemented. Returning to Root...\n");
+
+				for (int i = 0; i < 32; i++) {
+					uint32_t mask = 1 << i;
+
+					// implementing XOR Mask
+					// Only the bit where mask = 1 gets flipped
+					uint32_t flip = inst_in ^ mask;
+
+					error = NULL;
+					parse_result = convert_to_assembly(flip, &error);
+
+					// Checking to see if error ocurred
+					// If no error, generate assembly using the valid address
+					if (error == NULL) {
+						generate_assembly(decompile_result, LINE_BUFF_SIZE, parse_result, &error);
+						
+						if (error = NULL) {
+							printf("Recommended Fix: %2d: %s" i, decompile_result);
+						}
+					}
+					
+				}
+				printf("Done! Returning to Root...\n");
 				int_state = ROOT;
 				
 				break;
