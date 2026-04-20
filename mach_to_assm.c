@@ -22,10 +22,20 @@ static size_t find_instruction_by_code(uint32_t op_code, uint32_t funct_code, ch
 
 // TODO: Add in documentation/comments since Old Jim forgot
 
+/**
+*  @brief Converts a machine instruction to an assembly parse result.
+*  @param inst The machine instruction to convert.
+*  @param error Pointer to string to hold error message if an error occurs. Set to NULL if no error occurs.
+*  @return The assembly parse result corresponding to the provided machine instruction if error is not set
+*/
 struct assm_parse_result convert_to_assembly(uint32_t inst, char **error)
 {
 	*error = NULL;
 
+
+	/**
+	*  Extract fields from instruction using bit manipulation
+	*/
 	uint32_t rd = (inst >> 11) & MAX_5_BIT;
 	uint32_t rs = (inst >> 21) & MAX_5_BIT;
 	uint32_t rt = (inst >> 16) & MAX_5_BIT;
@@ -38,11 +48,21 @@ struct assm_parse_result convert_to_assembly(uint32_t inst, char **error)
 
 	struct assm_parse_result assembly;
 
+	/**
+	*  Determine which instruction this is
+	*/
 	size_t ins = find_instruction_by_code(op_code, funct_code, error);
 	if (*error != NULL)
 		return assembly;
 
+	/**
+	*  Set operation name
+	*/
 	assembly.op_name = instruction_definitions[ins].op_name;
+
+	/**
+	* Fill arg types and values based on instruction format
+	*/
 	for (size_t i = 0; i < 4; i++) {
 		switch (instruction_definitions[ins].parts[i]) {
 		case RD:
@@ -79,6 +99,13 @@ struct assm_parse_result convert_to_assembly(uint32_t inst, char **error)
 	return assembly;
 }
 
+/**
+*  @brief Searches instruction_definitions for a matching instruction
+*  @param op_code Opcode extracted from instruction
+*  @param funct_code Function code
+*  @param error Pointer to error string
+*  @return Index of matching instruction definition
+*/
 static size_t find_instruction_by_code(uint32_t op_code, uint32_t funct_code, char **error)
 {
 	size_t ins;
@@ -86,9 +113,11 @@ static size_t find_instruction_by_code(uint32_t op_code, uint32_t funct_code, ch
 
 	for (ins = 0; ins < sizeof(instruction_definitions)
 			/ sizeof(struct instruction_definition); ins++) {
+		// Check opcode match
 		if (bin_to_num(instruction_definitions[ins].op_code) != op_code)
 			continue;
 
+		// If R-type, also check funct_code
 		if (instruction_definitions[ins].type == R_TYPE) {
 			if (bin_to_num(instruction_definitions[ins].funct_code) != funct_code)
 				continue;
