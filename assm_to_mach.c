@@ -33,49 +33,57 @@ static void check_instruction_part(enum instruction_part part,
 
 uint32_t convert_to_machine_code(struct assm_parse_result parsed, char **error)
 {
+	// intiliaze the pointer to the error
 	*error = NULL;
 
+	// Use the name to find the instruction
 	size_t ins = find_instruction_by_name(parsed.op_name, error);
 	if (*error != NULL)
 		return UNDEFINED;
 
 	uint32_t result = 0;
 
+	// Encode bits 31-26 for opcode
 	result |= bin_to_num(instruction_definitions[ins].op_code) << 26;
 
+	// Encode funct code for R-type instructions
 	if (instruction_definitions[ins].type == R_TYPE)
 		result |= bin_to_num(instruction_definitions[ins].funct_code);
 
+	// Processes up to 4 possible instruction fields
 	for (size_t i = 0; i < 4; i++) {
 		check_instruction_part(instruction_definitions[ins].parts[i],
 				parsed.types[i], parsed.vals[i], error);
 
+		// Ensure there is no error
 		if (*error != NULL)
 			return UNDEFINED;
 
+		// Puts values into correct bit positions
 		switch (instruction_definitions[ins].parts[i]) {
-		case RD:
+		
+		case RD: // Reg goes in bits 15-11
 			result |= parsed.vals[i] << 11;
 			break;
-		case RS:
+		case RS: // Reg goes in bits 25-21
 			result |= parsed.vals[i] << 21;
 			break;
-		case RT:
+		case RT: // Reg goes in bits 20-16
 			result |= parsed.vals[i] << 16;
 			break;
-		case SA:
+		case SA: // Shift goes in bits 10-6
 			result |= parsed.vals[i] << 6;
 			break;
-		case IMM:
+		case IMM: // Occupies lower bits
 		case TAR:
 			result |= parsed.vals[i];
 			break;
-		case EMPTY:
+		case EMPTY: // No operand
 			break;
 		}
 	}
 
-	return result;
+	return result; // Results in a 32-bit encoded machine instruction
 }
 
 static size_t find_instruction_by_name(char *given_name, char **error)
@@ -83,52 +91,64 @@ static size_t find_instruction_by_name(char *given_name, char **error)
 	size_t ins;
 	bool found = false;
 
+	// Loop through definition table
 	for (ins = 0; ins < sizeof(instruction_definitions)
 			/ sizeof(struct instruction_definition); ins++) {
-		if (strcmp(given_name, instruction_definitions[ins].op_name) == 0) {
+		
+			// Compare input string to stored instruction name
+			if (strcmp(given_name, instruction_definitions[ins].op_name) == 0) {
 			found = true;
 			break;
 		}
 	}
 
+	// Throws an error is nothing is found
 	if (found == false)
 		*error = "No instruction of given name.";
 
-	return ins;
+	return ins; 
 }
 
 static void check_instruction_part(enum instruction_part part,
 		enum assm_parse_result_type given_type, uint32_t given_val, char **error)
 {
+
+	// Checks which register field
 	switch (part) {
 	case RD:
 	case RS:
 	case RT:
 	case SA:
+		// Must be a register type
 		if (given_type != REGISTER) {
 			*error = "Missing register.";
 			return;
 		}
+		// Must fit in 5-bit register field
 		if (given_val > MAX_5_BIT) {
 			*error = "Invalid register.";
 			return;
 		}
 		break;
 	case IMM:
+		// Must be immediate type
 		if (given_type != IMMEDIATE) {
 			*error = "Missing immediate.";
 			return;
 		}
+		// Must fit in 16 bits
 		if (given_val > MAX_16_BIT) {
 			*error = "Invalid immediate.";
 			return;
 		}
 		break;
 	case TAR:
+		// Must be target or jump address type
 		if (given_type != TARGET) {
 			*error = "Missing target.";
 			return;
 		}
+		// Must fit in 26 bits
 		if (given_val > MAX_26_BIT) {
 			*error = "Invalid target.";
 			return;
